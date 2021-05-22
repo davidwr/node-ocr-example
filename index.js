@@ -1,5 +1,6 @@
 const tesseract = require('node-tesseract-ocr')
-const fs = require('fs/promises')
+const fs = require('fs')
+const fsProm = require('fs/promises')
 const path = require('path')
 
 const config = {
@@ -10,13 +11,17 @@ const config = {
 
 async function main() {
   try {
-    const files = await fs.readdir(path.resolve('.', 'resources'))
+    const resultFile = path.join('.', 'resources', 'result.txt')
+    if (fs.existsSync(resultFile)) {
+      await fsProm.unlink(resultFile)
+    }
+    const files = await fsProm.readdir(path.resolve('.', 'resources'))
 
     let fileText = ''
     for await (file of files) {
       fileText = fileText + await tesseract.recognize(`./resources/${file}`, config)
     }
-    await fs.writeFile(path.join('.', 'resources', 'result.txt'), fileText)
+    await fsProm.writeFile(path.join('.', 'resources', 'result.txt'), fileText)
     console.log('Finished!')
   } catch (error) {
     console.log(error)
